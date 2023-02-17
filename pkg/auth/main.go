@@ -32,7 +32,7 @@ func main() {
 
 func startSelenium() error {
 	// Run Chrome browser
-	service, err := selenium.NewChromeDriverService("chromedriver", 4444)
+	service, err := selenium.NewChromeDriverService("./chromedriver", 4444)
 	if err != nil {
 		panic(err)
 	}
@@ -52,7 +52,19 @@ func startSelenium() error {
 		panic(err)
 	}
 
-	driver.Get("https://www.google.com")
+	driver.Get("https://soundcloud.com/signin")
+
+	// Feb 2023
+	// email: sign_in_up_email     <ID, input>
+	// pass:  enter_password_field <ID, input>
+	fmt.Println("Attempting sign in...")
+	elem, err := driver.FindElement(selenium.ByID, "sign_in_up_email")
+	if err != nil {
+		panic(err)
+	}
+
+	// TODO, put into text
+	elem.
 
 	return err
 }
