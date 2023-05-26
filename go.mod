@@ -1,3 +1,3 @@
-module github.com/ThisIsntTheWay/SoundClown
+module thisisnttheway/soundclown
 
-go 1.20
+go 1.18
