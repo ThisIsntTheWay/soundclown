@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Soundclown</title>
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <script>
+            function submitForm() {
+                let baseUrl = window.location.protocol + "//" + window.location.host
+                let requestBody = {
+                    "url": document.getElementById("dataField").value
+                }
+    
+                // Prep request
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", baseUrl + "/api/download", true);
+                xhr.setRequestHeader("Content-Type", "application/json");
+    
+                // Set up the callback function for when the request is complete
+                let statusMessage = "";
+                let statusElement = document.getElementById("status");
+
+                // Reset statusElement
+                statusElement.className = "neutral";
+                statusElement.innerHTML = "Sending request...";
+
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            statusMessage = "Request successful: " + xhr.responseText;
+                            statusElement.className = "success";
+                        } else {
+                            statusMessage = xhr.responseText;
+                            statusElement.className = "error";
+                        }
+
+                        console.log(statusMessage);
+                        statusElement.innerHTML = statusMessage;
+                    }
+                };
+    
+                // Send the request
+                xhr.send(JSON.stringify(requestBody));
+            }          
+        </script>
+    </head>
+    <body>
+        <h1>Soundclown landing page</h1>
+
+        <p></p>
+
+        <form onsubmit="event.preventDefault(); submitForm();">
+            <label for="dataField">Enter track URL:</label>
+            <input type="text" id="dataField" name="dataField">
+            <button type="submit">Submit</button>
+        </form>
+
+        <p></p>
+
+        <span class="neutral" id="status">Waiting for input...</span>
+
+        <p></p>
+        <a href="/files">I want to see my stuff!</a>
+        
+    </body>
+</html>

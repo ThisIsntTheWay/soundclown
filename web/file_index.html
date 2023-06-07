@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Soundclown - File index</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <h1>File index</h1>
+    
+    <p>Here's your stuff.</p>
+    
+    <ul>
+        {{range .}}
+        <li><a href="{{.URL}}">{{.Name}}</a></li>
+        {{end}}
+    </ul>
+    
+</body>
+</html>
