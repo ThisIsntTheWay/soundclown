@@ -42,9 +42,9 @@ func main() {
 	http.HandleFunc("/download/", handleDownload)
 
 	// Start the server.
-	fmt.Println("Server listening on port 3000")
+	fmt.Println("Server listening on port 8080")
 	log.Panic(
-		http.ListenAndServe(":3000", nil),
+		http.ListenAndServe(":8080", nil),
 	)
 }
 
