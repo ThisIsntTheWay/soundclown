@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-soundclown
+  labels:
+    app: soundclown
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: soundclown
+  template:
+    metadata:
+      labels:
+        app: soundclown
+    spec:
+      containers:
+      - name: soundclown
+        image: thisisnttheway/soundclown
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /opt/app/destination
+          name: pvc-sc-data
+      volumes:
+      - name: pvc-sc-data
+        persistentVolumeClaim:
+          claimName: pvc-sc-data
