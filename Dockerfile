@@ -9,6 +9,15 @@ RUN pip3 install scdl
 RUN mkdir -p /opt/app
 ADD web /opt/app/web
 
+# Create SCDL config
+RUN mkdir -p /.config
+
+# Make dirs writable for OCP
+RUN chgrp -R 0 /opt/app && \
+    chmod -R g+rwX /opt/app
+RUN chgrp -R 0 /.config && \
+    chmod -R g+rwX /.config
+
 # Compile
 COPY go.mod main.go /opt/app/
 WORKDIR /opt/app
