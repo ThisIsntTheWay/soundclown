@@ -23,11 +23,12 @@ import (
 // ----------------------------------------
 
 type File struct {
-	Name   string
-	URL    string
-	Title  string
-	Artist string
-	Genre  string
+	Name     string
+	URL      string
+	Title    string
+	Artist   string
+	Genre    string
+	SoundUrl string
 }
 
 type DownloadRequest struct {
@@ -66,13 +67,13 @@ func mp3fileRemoveHandler(w http.ResponseWriter, r *http.Request) {
 		// Get the filename from the URL and check if it ends in .mp3
 		filename := filepath.Base(r.URL.Path)
 		if filename == "" || !strings.HasSuffix(filename, ".mp3") {
-			http.Error(w, "{\"error\": \"Missing filename or not an mp3 file\"}", http.StatusBadRequest)
+			http.Error(w, "Missing filename or not an mp3 file", http.StatusBadRequest)
 			return
 		}
 
 		// Check if the file exists
 		if _, err := os.Stat("./destination/" + filename); os.IsNotExist(err) {
-			http.Error(w, "{\"error\": \"File does not exist\"}", http.StatusNotFound)
+			http.Error(w, "File does not exist", http.StatusNotFound)
 			return
 		}
 
@@ -80,7 +81,7 @@ func mp3fileRemoveHandler(w http.ResponseWriter, r *http.Request) {
 		err := os.Remove("./destination/" + filename)
 		if err != nil {
 			stringErr := fmt.Sprintf("%s", err)
-			http.Error(w, "{\"error\": \"Could not delete file: "+stringErr+"\"}", http.StatusInternalServerError)
+			http.Error(w, "Could not delete file: "+stringErr, http.StatusInternalServerError)
 			return
 		} else {
 			w.WriteHeader(http.StatusOK)
@@ -88,7 +89,7 @@ func mp3fileRemoveHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		http.Error(w, "{\"error\": \"Method not allowed\"}", http.StatusMethodNotAllowed)
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 }
@@ -98,7 +99,7 @@ func fileIndexHandler(w http.ResponseWriter, r *http.Request) {
 	files, err := ioutil.ReadDir("./destination")
 	if err != nil {
 		stringErr := fmt.Sprintf("%s", err)
-		http.Error(w, "{\"error\": \"Could not obtain MP3s: "+stringErr+"\"}", http.StatusInternalServerError)
+		http.Error(w, "Could not obtain MP3s: "+stringErr, http.StatusInternalServerError)
 		return
 	}
 
@@ -109,7 +110,7 @@ func fileIndexHandler(w http.ResponseWriter, r *http.Request) {
 			f, err := os.Open("./destination/" + file.Name())
 			if err != nil {
 				stringErr := fmt.Sprintf("%s", err)
-				http.Error(w, "{\"error\": \"Could not open MP3: "+stringErr+"\"}", http.StatusInternalServerError)
+				http.Error(w, "Could not open MP3: "+stringErr, http.StatusInternalServerError)
 				return
 			}
 			defer f.Close()
@@ -117,17 +118,24 @@ func fileIndexHandler(w http.ResponseWriter, r *http.Request) {
 			metadata, err := tag.ReadFrom(f)
 			if err != nil {
 				stringErr := fmt.Sprintf("%s", err)
-				http.Error(w, "{\"error\": \"Could not read MP3 metadata: "+stringErr+"\"}", http.StatusInternalServerError)
+				http.Error(w, "Could not read MP3 metadata: "+stringErr, http.StatusInternalServerError)
 				return
 			}
 
+			// Capitalize the first letter of the genre
+			genreLow := strings.ToLower(metadata.Genre())
+			genre := strings.ToUpper(string(genreLow[0])) + genreLow[1:]
+
+			url := metadata.Raw()["WOAR"]
+
 			fileURL := "/download/" + file.Name()
 			mp3Files = append(mp3Files, File{
-				Name:   file.Name(),
-				URL:    fileURL,
-				Title:  metadata.Title(),
-				Artist: metadata.Artist(),
-				Genre:  metadata.Genre(),
+				Name:     file.Name(),
+				URL:      fileURL,
+				Title:    metadata.Title(),
+				Artist:   metadata.Artist(),
+				Genre:    genre,
+				SoundUrl: url.(string),
 			})
 		}
 	}
@@ -159,7 +167,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("web/index.html")
 	if err != nil {
 		stringErr := fmt.Sprintf("%s", err)
-		http.Error(w, "{\"error\": \"Could not template HTML: "+stringErr+"\"}", http.StatusInternalServerError)
+		http.Error(w, "Could not template HTML: "+stringErr, http.StatusInternalServerError)
 		return
 	}
 
@@ -167,7 +175,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	err = tmpl.Execute(w, nil)
 	if err != nil {
 		stringErr := fmt.Sprintf("%s", err)
-		http.Error(w, "{\"error\": \"Could not execute template HTML: "+stringErr+"\"}", http.StatusInternalServerError)
+		http.Error(w, "Could not execute template HTML: "+stringErr, http.StatusInternalServerError)
 		return
 	}
 }
@@ -181,7 +189,7 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 		contentType := r.Header.Get("Content-Type")
 		if contentType != "application/json" {
 			fmt.Println("[x] Request was not JSON")
-			http.Error(w, "{\"error\": \"Must be JSON\"}", http.StatusUnsupportedMediaType)
+			http.Error(w, "Must be JSON", http.StatusUnsupportedMediaType)
 		}
 
 		// Parse the request body as JSON
@@ -190,7 +198,7 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			stringErr := fmt.Sprintf("%s", err)
 			fmt.Println("[x] Request is invalid JSON")
-			http.Error(w, "{\"error\": \"Invalid JSON: +"+stringErr+"\"}", http.StatusBadRequest)
+			http.Error(w, "Invalid JSON: +"+stringErr, http.StatusBadRequest)
 			return
 		}
 
@@ -198,7 +206,7 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 		targetUrl := requestData.URL
 		if targetUrl == "" {
 			fmt.Println("[x] Request did not contain 'url' key in JSON")
-			http.Error(w, "{\"error\": \"Missing 'url' key in request body\"}", http.StatusBadRequest)
+			http.Error(w, "Missing 'url' key in request body", http.StatusBadRequest)
 			return
 		}
 
@@ -207,7 +215,7 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 		if !match || err != nil {
 			stringErr := "Not a SoundCloud URL"
 			fmt.Println("[x] Error matching regex: " + stringErr)
-			http.Error(w, "{\"error\": \"Error matching regex: "+stringErr+"\"}", http.StatusInternalServerError)
+			http.Error(w, "Error matching regex: "+stringErr, http.StatusInternalServerError)
 			return
 		}
 
@@ -226,7 +234,7 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			fmt.Println("[x] Error downloading: " + stringErr)
-			http.Error(w, "{\"error\": \""+stringErr+"\"}", http.StatusInternalServerError)
+			http.Error(w, ""+stringErr, http.StatusInternalServerError)
 		} else {
 			fmt.Println("[i] scdl OK")
 		}
