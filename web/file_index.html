@@ -40,7 +40,7 @@
                         
                         document.getElementById(targetFile).remove();
                     } else {
-                        statusMessage = JSON.parse(xhr.responseText).error;
+                        statusMessage = xhr.responseText
                         statusElement.className = "error";
                     }
 
@@ -68,7 +68,7 @@
     <div id="fileIndex">
         {{range .}}
         <span id="{{.Name}}">
-            <a href="{{.URL}}">{{.Artist}} - {{.Title}}</a> ({{.Genre}}) <b style="cursor: pointer;" onClick="removeFile({{.Name}})">❌</b><br>
+            <a href="{{.URL}}">{{.Artist}} - {{.Title}}</a> ({{.Genre}}) [<a href="{{.SoundUrl}}">Source</a>] <b style="cursor: pointer;" onClick="removeFile({{.Name}})">❌</b><br>
         </span>
         {{end}}
     </div>
@@ -76,9 +76,7 @@
     <p></p>
 
     <span class="neutral" id="status"></span>
-    <span id="spinner" style="display: none;">
-        <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
-    </span>
+    <span id="spinner" style="display: none;"></span>
     
 </body>
 </html>

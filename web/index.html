@@ -34,7 +34,7 @@
                             statusMessage = "File has been downloaded.";
                             statusElement.className = "success";
                         } else {
-                            statusMessage = JSON.parse(xhr.responseText).error;
+                            statusMessage = xhr.responseText
                             statusElement.className = "error";
                         }
 
@@ -66,9 +66,7 @@
         <p></p>
 
         <span class="neutral" id="status">Waiting for input...</span>
-        <span id="spinner" style="display: none;">
-            <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
-        </span>
+        <span id="spinner" style="display: none;"></span>
 
         <p></p>
         <a href="/files">I want to see my stuff!</a>
