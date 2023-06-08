@@ -41,3 +41,99 @@ body {
     90% { content: "🕙"; }
     100% { content: "🕚"; }
 }
+
+/* Tumbleweeds, stolen from: https://jsfiddle.net/02Lxp9gs/24/ */
+:root {
+  --animation-time-jump: 1.5s;
+  --animation-time-roll: 5s;
+  --animation-time-rotate: 2s;
+}
+
+.desert {
+  background: rgba(255, 255, 255, 0);
+  position: relative;
+  height: 8rem;
+  overflow: hidden;
+  width: 75%;
+  margin: auto;
+  -webkit-mask-image:
+    linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 95%, rgba(0,0,0,0) 100%);
+  mask-image:
+    linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 90%, rgba(0,0,0,0) 100%);
+}
+
+.desert::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: white;
+  height: 8rem;
+  -webkit-mask-image:
+    linear-gradient(to right, rgba(0,0,0,1), rgba(0,0,0,1) 5%, rgba(0,0,0,0) 10%);
+  mask-image:
+  linear-gradient(to right, rgba(0,0,0,1), rgba(0,0,0,1) 5%, rgba(0,0,0,0) 10%);
+  z-index: 1;
+}
+
+.desert .tumbleweed {
+  position: absolute;
+  top: 0;
+  left: -5rem;
+  background: url(https://img.icons8.com/ios/1600/tumbleweed.png) no-repeat center;
+  background-size: cover;
+  width: 5rem;
+  height: 5rem;
+  animation: 
+    jumping var(--animation-time-jump) infinite,
+    rolling var(--animation-time-roll) linear infinite,
+    rotating var(--animation-time-rotate) linear infinite;
+}
+.tumbleweed:nth-child(2) {
+    animation-delay: 2.5s;
+}
+.tumbleweed:nth-child(3) {
+    animation-delay: 4s;
+}
+
+@keyframes jumping {
+  0% {
+      top: 0rem;
+      animation-timing-function: ease-in;
+  }
+  25% {
+      top: 3rem;
+      animation-timing-function: ease-out;
+  }
+  50% {
+      top: 1rem;
+      animation-timing-function: ease-in;
+  }
+  75% {
+      top: 3rem;
+      animation-timing-function: ease-out;
+  }
+  100% {
+      top: 0rem;
+      animation-timing-function: ease-in;
+  }
+}
+
+@keyframes rolling {
+  0% {
+      left: -5rem;
+  }
+  100% {
+      left: 100%;
+  }
+}
+
+@keyframes rotating {
+  0% {
+      transform: rotate(0deg);
+  }
+  100% {
+      transform: rotate(360deg);
+  }
+}
