@@ -35,11 +35,12 @@ type DownloadRequest struct {
 
 func main() {
 	// Handlers
-	http.Handle("/", http.HandlerFunc(indexHandler))
-	http.Handle("/files", http.HandlerFunc(mp3fileHandler))
 	http.Handle("/api/download", http.HandlerFunc(downloadHandler))
+	http.Handle("/api/remove/", http.HandlerFunc(mp3fileRemoveHandler))
 	http.Handle("/style.css", http.FileServer(http.Dir("web")))
-	http.HandleFunc("/download/", handleDownload)
+	http.Handle("/download", http.HandlerFunc(handleDownload))
+	http.Handle("/files", http.HandlerFunc(mp3fileHandler))
+	http.Handle("/", http.HandlerFunc(indexHandler))
 
 	// Start the server.
 	fmt.Println("Server listening on port 8080")
@@ -51,6 +52,41 @@ func main() {
 // ----------------------------------------
 // HANDLERS
 // ----------------------------------------
+
+func mp3fileRemoveHandler(w http.ResponseWriter, r *http.Request) {
+	// Add a handler for a DELETE request to delete the specified file if it exists
+	if r.Method == http.MethodDelete {
+		fmt.Printf("[i] DELETE request received for %s\n", r.URL.Path)
+
+		// Get the filename from the URL and check if it ends in .mp3
+		filename := filepath.Base(r.URL.Path)
+		if filename == "" || !strings.HasSuffix(filename, ".mp3") {
+			http.Error(w, "{\"error\": \"Missing filename or not an mp3 file\"}", http.StatusBadRequest)
+			return
+		}
+
+		// Check if the file exists
+		if _, err := os.Stat("./destination/" + filename); os.IsNotExist(err) {
+			http.Error(w, "{\"error\": \"File does not exist\"}", http.StatusNotFound)
+			return
+		}
+
+		// Delete the file
+		err := os.Remove("./destination/" + filename)
+		if err != nil {
+			stringErr := fmt.Sprintf("%s", err)
+			http.Error(w, "{\"error\": \"Could not delete file: "+stringErr+"\"}", http.StatusInternalServerError)
+			return
+		} else {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("{\"success\": \"File deleted\"}"))
+			return
+		}
+	} else {
+		http.Error(w, "{\"error\": \"Method not allowed\"}", http.StatusMethodNotAllowed)
+		return
+	}
+}
 
 func mp3fileHandler(w http.ResponseWriter, r *http.Request) {
 	// Get mp3 files
@@ -85,6 +121,13 @@ func mp3fileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
+	// Return badrequest if not GET
+	if r.Method != http.MethodGet {
+		fmt.Println("[X] indexHandler got a non-GET request.")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	// Parse the template file
 	tmpl, err := template.ParseFiles("web/index.html")
 	if err != nil {
@@ -162,6 +205,7 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}

@@ -3,6 +3,60 @@
 <head>
     <title>Soundclown - File index</title>
     <link rel="stylesheet" type="text/css" href="style.css">
+    <script>
+        function removeFile(targetFile) {
+            // Show alert and return if user doesn't confirm
+            if (!confirm("Are you sure you want to remove '" + targetFile + "'?")) {
+                return;
+            }
+
+            let baseUrl = window.location.protocol + "//" + window.location.host
+            let targetUrl = baseUrl + "/api/remove/" + targetFile
+
+            console.log("Target: " + targetUrl);
+
+            // Set up the callback function for when the request is complete
+            const statusElement = document.getElementById("status");
+            const statusSpinner = document.getElementById("spinner");
+            let statusMessage = "";
+
+            // Reset statusElement
+            statusElement.style.display = 'none';
+            statusElement.className = "neutral";
+            statusElement.innerHTML = "Sending request...";
+
+            // Show spinner
+            statusSpinner.style.display = 'inline';
+
+            // Prep request
+            var xhr = new XMLHttpRequest();
+            xhr.open("DELETE", targetUrl, true);
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        statusMessage = "File has been removed.";
+                        statusElement.className = "success";
+                        
+                        document.getElementById(targetFile).remove();
+                    } else {
+                        statusMessage = xhr.responseText;
+                        statusElement.className = "error";
+                    }
+
+                    // Disable spinner, show statusElement
+                    statusElement.innerHTML = statusMessage;
+                    console.log(statusMessage);
+
+                    statusElement.style.display = 'inline';
+                    statusSpinner.style.display = 'none';
+                }
+            };
+
+            // Send the request
+            xhr.send();
+        }
+    </script>
 </head>
 <body>
     <h1>File index</h1>
@@ -11,9 +65,16 @@
     
     <ul>
         {{range .}}
-        <li><a href="{{.URL}}">{{.Name}}</a></li>
+        <li id="{{.Name}}"><a href="{{.URL}}">{{.Name}}</a> - <b style="cursor: pointer;" onClick="removeFile({{.Name}})">❌</b></li>
         {{end}}
     </ul>
+
+    <p></p>
+
+    <span class="neutral" id="status"></span>
+    <span id="spinner" style="display: none;">
+        <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+    </span>
     
 </body>
 </html>
