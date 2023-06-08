@@ -220,7 +220,18 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Actually download the thing
-		cmd := exec.Command("scdl", "-l", targetUrl, "-a", "--original-name", "--path", "./destination")
+		scdlArguments := []string{
+			"-l", targetUrl,
+			"-a",
+			"--addtofile",
+			"--original-name",
+			"--path", "./destination",
+			"--no-playlist-folder",
+			"--addtimestamp",
+		}
+		fmt.Println("[i] scdl arguments: " + strings.Join(scdlArguments, " "))
+
+		cmd := exec.Command("scdl", scdlArguments...)
 
 		var stderr bytes.Buffer
 		cmd.Stderr = &stderr
