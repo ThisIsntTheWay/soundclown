@@ -8,11 +8,9 @@ spec:
     local: false
   tags:
     - name: latest
-      annotations: null
       from:
         kind: DockerImage
         name: 'thisisnttheway/soundclown:latest'
-      generation: 2
       importPolicy:
         importMode: Legacy
       referencePolicy:
