@@ -1,0 +1,33 @@
+kind: DeploymentConfig
+apiVersion: apps.openshift.io/v1
+metadata:
+  name: dc-soundclown
+  namespace: soundclowm
+spec:
+  selector:
+    app: soundclownn
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: soundclown
+    spec:
+      containers:
+        - name: soundclown
+          image: stream-soundclown
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          imagePullPolicy: Always
+      restartPolicy: Always
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+          - soundclown
+        from:
+          kind: ImageStreamTag
+          namespace: soundclowm
+          name: 'soundclown:latest'
