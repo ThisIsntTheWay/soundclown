@@ -34,7 +34,7 @@
                             statusMessage = "File has been downloaded.";
                             statusElement.className = "success";
                         } else {
-                            statusMessage = xhr.responseText;
+                            statusMessage = JSON.parse(xhr.responseText).error;
                             statusElement.className = "error";
                         }
 
