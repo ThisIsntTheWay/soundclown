@@ -19,7 +19,14 @@ spec:
             - containerPort: 8080
               protocol: TCP
           imagePullPolicy: Always
+          volumeMounts:
+            - name: soundclown
+              mountPath: /opt/app/destination
       restartPolicy: Always
+      volumes:
+        - name: soundclown
+          persistentVolumeClaim:
+            claimName: pvc-sc-data
   triggers:
     - type: ImageChange
       imageChangeParams:
