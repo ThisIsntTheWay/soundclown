@@ -21,7 +21,6 @@ spec:
           imagePullPolicy: Always
       restartPolicy: Always
   triggers:
-    - type: ConfigChange
     - type: ImageChange
       imageChangeParams:
         automatic: true
