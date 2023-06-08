@@ -24,6 +24,9 @@ WORKDIR /opt/app
 RUN go mod download
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build
 
+# Cleanup
+RUN rm go.mod main.go
+
 # Run
 WORKDIR /opt/app/
 CMD [ "./soundclown" ]
