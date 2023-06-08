@@ -40,7 +40,7 @@
                         
                         document.getElementById(targetFile).remove();
                     } else {
-                        statusMessage = xhr.responseText;
+                        statusMessage = JSON.parse(xhr.responseText).error;
                         statusElement.className = "error";
                     }
 
@@ -61,13 +61,17 @@
 <body>
     <h1>File index</h1>
     
-    <p>Here's your stuff.</p>
+    <p>
+        <a href="/">Download other stuff</a>
+    </p>
     
-    <ul>
+    <div id="fileIndex">
         {{range .}}
-        <li id="{{.Name}}"><a href="{{.URL}}">{{.Name}}</a> - <b style="cursor: pointer;" onClick="removeFile({{.Name}})">❌</b></li>
+        <span id="{{.Name}}">
+            <a href="{{.URL}}">{{.Artist}} - {{.Title}}</a> ({{.Genre}}) <b style="cursor: pointer;" onClick="removeFile({{.Name}})">❌</b><br>
+        </span>
         {{end}}
-    </ul>
+    </div>
 
     <p></p>
 
