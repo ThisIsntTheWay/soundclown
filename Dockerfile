@@ -19,7 +19,7 @@ RUN chgrp -R 0 /.config && \
     chmod -R g+rwX /.config
 
 # Compile
-COPY go.mod main.go /opt/app/
+COPY go.mod go.sum main.go /opt/app/
 WORKDIR /opt/app
 RUN go mod download
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build

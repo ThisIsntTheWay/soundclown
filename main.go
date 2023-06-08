@@ -14,6 +14,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/dhowden/tag"
 )
 
 // ----------------------------------------
@@ -21,8 +23,11 @@ import (
 // ----------------------------------------
 
 type File struct {
-	Name string
-	URL  string
+	Name   string
+	URL    string
+	Title  string
+	Artist string
+	Genre  string
 }
 
 type DownloadRequest struct {
@@ -38,8 +43,8 @@ func main() {
 	http.Handle("/api/download", http.HandlerFunc(downloadHandler))
 	http.Handle("/api/remove/", http.HandlerFunc(mp3fileRemoveHandler))
 	http.Handle("/style.css", http.FileServer(http.Dir("web")))
-	http.Handle("/download", http.HandlerFunc(handleDownload))
-	http.Handle("/files", http.HandlerFunc(mp3fileHandler))
+	http.Handle("/download/", http.HandlerFunc(serveMusicFile))
+	http.Handle("/files", http.HandlerFunc(fileIndexHandler))
 	http.Handle("/", http.HandlerFunc(indexHandler))
 
 	// Start the server.
@@ -88,7 +93,7 @@ func mp3fileRemoveHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func mp3fileHandler(w http.ResponseWriter, r *http.Request) {
+func fileIndexHandler(w http.ResponseWriter, r *http.Request) {
 	// Get mp3 files
 	files, err := ioutil.ReadDir("./destination")
 	if err != nil {
@@ -100,8 +105,30 @@ func mp3fileHandler(w http.ResponseWriter, r *http.Request) {
 	mp3Files := make([]File, 0)
 	for _, file := range files {
 		if !file.IsDir() && strings.HasSuffix(file.Name(), ".mp3") {
+			// Extract artist from metadata of file
+			f, err := os.Open("./destination/" + file.Name())
+			if err != nil {
+				stringErr := fmt.Sprintf("%s", err)
+				http.Error(w, "{\"error\": \"Could not open MP3: "+stringErr+"\"}", http.StatusInternalServerError)
+				return
+			}
+			defer f.Close()
+
+			metadata, err := tag.ReadFrom(f)
+			if err != nil {
+				stringErr := fmt.Sprintf("%s", err)
+				http.Error(w, "{\"error\": \"Could not read MP3 metadata: "+stringErr+"\"}", http.StatusInternalServerError)
+				return
+			}
+
 			fileURL := "/download/" + file.Name()
-			mp3Files = append(mp3Files, File{Name: file.Name(), URL: fileURL})
+			mp3Files = append(mp3Files, File{
+				Name:   file.Name(),
+				URL:    fileURL,
+				Title:  metadata.Title(),
+				Artist: metadata.Artist(),
+				Genre:  metadata.Genre(),
+			})
 		}
 	}
 
@@ -201,7 +228,7 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("[x] Error downloading: " + stringErr)
 			http.Error(w, "{\"error\": \""+stringErr+"\"}", http.StatusInternalServerError)
 		} else {
-			fmt.Printf("[i] scdl OK")
+			fmt.Println("[i] scdl OK")
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -211,7 +238,7 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleDownload(w http.ResponseWriter, r *http.Request) {
+func serveMusicFile(w http.ResponseWriter, r *http.Request) {
 	filename := filepath.Base(r.URL.Path)
 	folderPath := "./destination"
 
