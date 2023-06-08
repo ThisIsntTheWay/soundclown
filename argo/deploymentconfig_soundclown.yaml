@@ -2,10 +2,10 @@ kind: DeploymentConfig
 apiVersion: apps.openshift.io/v1
 metadata:
   name: dc-soundclown
-  namespace: soundclowm
+  namespace: soundclown
 spec:
   selector:
-    app: soundclownn
+    app: soundclown
   replicas: 1
   template:
     metadata:
