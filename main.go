@@ -1,19 +1,19 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"os/exec"
 	"html/template"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
-	"io/ioutil"
-	"regexp"
-	"bytes"
 	"os"
+	"os/exec"
 	"path/filepath"
-	"io"
+	"regexp"
+	"strings"
 )
 
 // ----------------------------------------
@@ -58,6 +58,7 @@ func mp3fileHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		stringErr := fmt.Sprintf("%s", err)
 		http.Error(w, "{\"error\": \"Could not obtain MP3s: "+stringErr+"\"}", http.StatusInternalServerError)
+		return
 	}
 
 	mp3Files := make([]File, 0)
@@ -71,12 +72,14 @@ func mp3fileHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse the HTML template
 	tmpl, err := template.ParseFiles("web/file_index.html")
 	if err != nil {
+		http.Error(w, "Oopsie woopsie", http.StatusInternalServerError)
 		log.Fatal(err)
 	}
 
 	// Execute the template with the file list
 	err = tmpl.Execute(w, mp3Files)
 	if err != nil {
+		http.Error(w, "Oopsie woopsie", http.StatusInternalServerError)
 		log.Fatal(err)
 	}
 }
