@@ -29,5 +29,5 @@ spec:
           - soundclown
         from:
           kind: ImageStreamTag
-          namespace: soundclowm
-          name: 'soundclown:latest'
+          namespace: soundclown
+          name: 'stream-soundclown:latest'
