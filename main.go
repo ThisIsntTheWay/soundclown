@@ -122,10 +122,6 @@ func fileIndexHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			// Capitalize the first letter of the genre
-			genreLow := strings.ToLower(metadata.Genre())
-			genre := strings.ToUpper(string(genreLow[0])) + genreLow[1:]
-
 			url := metadata.Raw()["WOAR"]
 
 			fileURL := "/download/" + file.Name()
@@ -134,7 +130,7 @@ func fileIndexHandler(w http.ResponseWriter, r *http.Request) {
 				URL:      fileURL,
 				Title:    metadata.Title(),
 				Artist:   metadata.Artist(),
-				Genre:    genre,
+				Genre:    metadata.Genre(),
 				SoundUrl: url.(string),
 			})
 		}
